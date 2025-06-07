@@ -1,0 +1,193 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+class BankAccount {
+public:
+    string accountNumber;
+    string accountHolder;
+    double balance;
+
+    // Constructor
+    BankAccount(string accNo, string name, double bal) {
+        accountNumber = accNo;
+        accountHolder = name;
+        balance = bal;
+    }
+
+    // Deposit function
+    void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            cout << "Deposited: $" << amount << " successfully!\n";
+        } else {
+            cout << "Invalid deposit amount!\n";
+        }
+    }
+
+    // Withdraw function
+    void withdraw(double amount) {
+        if (amount > balance) {
+            cout << "Insufficient balance!\n";
+        } else if (amount <= 0) {
+            cout << "Invalid withdrawal amount!\n";
+        } else {
+            balance -= amount;
+            cout << "Withdrawn: $" << amount << " successfully!\n";
+        }
+    }
+
+    // Transfer function
+    void transfer(BankAccount &recipient, double amount) {
+        if (amount > balance) {
+            cout << "Insufficient balance!\n";
+        } else if (amount <= 0) {
+            cout << "Invalid transfer amount!\n";
+        } else {
+            balance -= amount;
+            recipient.balance += amount;
+            cout << "Transferred: $" << amount << " to " << recipient.accountHolder << " successfully!\n";
+        }
+    }
+
+    // Display account details
+    void displayDetails() {
+        cout << "\nAccount Number: " << accountNumber
+             << "\nAccount Holder: " << accountHolder
+             << "\nBalance: $" << balance << endl;
+    }
+
+    // Save account details to file
+    void saveToFile() {
+        ofstream file("bank_data.txt", ios::app);
+        file << accountNumber << " " << accountHolder << " " << balance << endl;
+        file.close();
+    }
+};
+
+// Function to find an account by account number
+BankAccount* findAccount(vector<BankAccount> &accounts, string accNo) {
+    for (auto &acc : accounts) {
+        if (acc.accountNumber == accNo) {
+            return &acc;
+        }
+    }
+    return nullptr;
+}
+
+int main() {
+    vector<BankAccount> accounts;
+    int choice;
+    
+    while (true) {
+        cout << "\nBanking System Menu:\n";
+        cout << "1. Create Account\n";
+        cout << "2. Deposit Money\n";
+        cout << "3. Withdraw Money\n";
+        cout << "4. Transfer Money\n";
+        cout << "5. View Account Details\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        if (choice == 1) {
+            // Creating a new account
+            string accNo, name;
+            double initialBalance;
+
+            cout << "Enter Account Number: ";
+            cin >> accNo;
+            cout << "Enter Account Holder Name: ";
+            cin.ignore();  // Ignore newline from previous input
+            getline(cin, name);
+            cout << "Enter Initial Balance: ";
+            cin >> initialBalance;
+
+            accounts.push_back(BankAccount(accNo, name, initialBalance));
+            cout << "Account Created Successfully!\n";
+        
+        } else if (choice == 2) {
+            // Deposit money
+            string accNo;
+            double amount;
+
+            cout << "Enter Account Number: ";
+            cin >> accNo;
+            BankAccount* acc = findAccount(accounts, accNo);
+            
+            if (acc) {
+                cout << "Enter amount to deposit: ";
+                cin >> amount;
+                acc->deposit(amount);
+            } else {
+                cout << "Account not found!\n";
+            }
+
+        } else if (choice == 3) {
+            // Withdraw money
+            string accNo;
+            double amount;
+
+            cout << "Enter Account Number: ";
+            cin >> accNo;
+            BankAccount* acc = findAccount(accounts, accNo);
+            
+            if (acc) {
+                cout << "Enter amount to withdraw: ";
+                cin >> amount;
+                acc->withdraw(amount);
+            } else {
+                cout << "Account not found!\n";
+            }
+
+        } else if (choice == 4) {
+            // Transfer money
+            string fromAcc, toAcc;
+            double amount;
+
+            cout << "Enter Your Account Number: ";
+            cin >> fromAcc;
+            cout << "Enter Recipient Account Number: ";
+            cin >> toAcc;
+
+            BankAccount* sender = findAccount(accounts, fromAcc);
+            BankAccount* receiver = findAccount(accounts, toAcc);
+
+            if (sender && receiver) {
+                cout << "Enter amount to transfer: ";
+                cin >> amount;
+                sender->transfer(*receiver, amount);
+            } else {
+                cout << "Invalid account details!\n";
+            }
+
+        } else if (choice == 5) {
+            // View account details
+            string accNo;
+            cout << "Enter Account Number: ";
+            cin >> accNo;
+
+            BankAccount* acc = findAccount(accounts, accNo);
+            if (acc) {
+                acc->displayDetails();
+            } else {
+                cout << "Account not found!\n";
+            }
+
+        } else if (choice == 6) {
+            // Saving account details to file and exiting
+            ofstream file("bank_data.txt", ios::app);
+            for (auto &acc : accounts) {
+                file << acc.accountNumber << " " << acc.accountHolder << " " << acc.balance << endl;
+            }
+            file.close();
+            cout << "Exiting...\n";
+            break;
+        } else {
+            cout << "Invalid choice! Please try again.\n";
+        }
+    }
+    return 0;
+}
