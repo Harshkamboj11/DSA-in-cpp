@@ -68,6 +68,8 @@ int main()
         cout << i << " ";
     }
     cout << endl;
+
     binarysearch(arr, x, 0, arr.size() - 1);
+    
     return 0;
 }
